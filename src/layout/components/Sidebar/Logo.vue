@@ -35,7 +35,7 @@ export default {
   },
   data() {
     return {
-      title: '若依管理系统',
+      title: '酷汀进销存系统',
       logo: logoImg
     }
   }
