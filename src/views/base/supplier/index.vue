@@ -147,10 +147,22 @@
               <el-input v-model="form.shortName" placeholder="请输入厂商简称" />
             </el-form-item>
           </el-col>
+          
+          <el-col :span="12">
+            <el-form-item label="负责人" prop="managerName">
+              <el-input v-model="form.managerName" placeholder="请输入负责人" />
+            </el-form-item>
+          </el-col>
 
           <el-col :span="12">
-            <el-form-item label="厂商联系方式" prop="phone">
-              <el-input v-model="form.phone" placeholder="请输入厂商联系方式" />
+            <el-form-item label="联系方式" prop="managerPhone">
+              <el-input v-model="form.managerPhone" placeholder="请输入负责人联系方式" />
+            </el-form-item>
+          </el-col>
+
+           <el-col :span="12">
+            <el-form-item label="厂商电话" prop="phone">
+              <el-input v-model="form.phone" placeholder="请输入厂商电话" />
             </el-form-item>
           </el-col>
 
@@ -160,21 +172,9 @@
             </el-form-item>
           </el-col>
 
-          <el-col :span="12">
+          <el-col :span="24">
             <el-form-item label="厂商地址" prop="address">
               <el-input v-model="form.address" placeholder="请输入厂商地址" />
-            </el-form-item>
-          </el-col>
-          
-          <el-col :span="12">
-            <el-form-item label="负责人" prop="managerName">
-              <el-input v-model="form.managerName" placeholder="请输入负责人" />
-            </el-form-item>
-          </el-col>
-
-          <el-col :span="12">
-            <el-form-item label="负责人联系方式" prop="managerPhone">
-              <el-input v-model="form.managerPhone" placeholder="请输入负责人联系方式" />
             </el-form-item>
           </el-col>
 
