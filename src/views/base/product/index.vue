@@ -137,7 +137,7 @@
     />
 
     <!-- 添加或修改商品信息对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="600px" append-to-body>
+    <el-dialog :title="title" :visible.sync="open" width="800px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-row>
           <el-col :span="12">
@@ -160,7 +160,7 @@
 
           <el-col :span="12">
             <el-form-item label="商品类型" prop="type">
-              <el-select v-model="form.type" placeholder="请选择商品类型">
+              <el-select v-model="form.type" placeholder="请选择商品类型" style="width:300px;">
                 <el-option
                   v-for="dict in productTypeOptions"
                   :key="dict.dictValue"
@@ -173,7 +173,7 @@
 
           <el-col :span="12">
             <el-form-item label="商品型号" prop="size">
-              <el-select v-model="form.size" placeholder="请选择商品类型">
+              <el-select v-model="form.size" placeholder="请选择商品类型" style="width:300px;">
                 <el-option
                   v-for="dict in productSizeOptions"
                   :key="dict.dictValue"

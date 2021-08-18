@@ -1,28 +1,28 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="供应商编号" prop="no">
+      <el-form-item label="厂商编号" prop="no">
         <el-input
           v-model="queryParams.no"
-          placeholder="请输入供应商编号"
+          placeholder="请输入厂商编号"
           clearable
           size="small"
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="供应商名称" prop="name">
+      <el-form-item label="厂商名称" prop="name">
         <el-input
           v-model="queryParams.name"
-          placeholder="请输入供应商名称"
+          placeholder="请输入厂商名称"
           clearable
           size="small"
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="供应商简称" prop="shortName">
+      <el-form-item label="厂商简称" prop="shortName">
         <el-input
           v-model="queryParams.shortName"
-          placeholder="请输入供应商简称"
+          placeholder="请输入厂商简称"
           clearable
           size="small"
           @keyup.enter.native="handleQuery"
@@ -93,9 +93,9 @@
     <el-table v-loading="loading" :data="supplierList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="主键" align="center" prop="id" />
-      <el-table-column label="供应商编号" align="center" prop="no" />
-      <el-table-column label="供应商名称" align="center" prop="name" />
-      <el-table-column label="供应商简称" align="center" prop="shortName" />
+      <el-table-column label="厂商编号" align="center" prop="no" />
+      <el-table-column label="厂商名称" align="center" prop="name" />
+      <el-table-column label="厂商简称" align="center" prop="shortName" />
       <el-table-column label="负责人" align="center" prop="managerName" />
       <el-table-column label="备注信息" align="center" prop="remarks" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
@@ -126,43 +126,43 @@
       @pagination="getList"
     />
 
-    <!-- 添加或修改供应商信息对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="600px" append-to-body>
+    <!-- 添加或修改厂商信息对话框 -->
+    <el-dialog :title="title" :visible.sync="open" width="800px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-row>
           <el-col :span="12">
-            <el-form-item label="供应商编号" prop="no" v-if="form.id != null">
-              <el-input v-model="form.no" placeholder="请输入供应商编号" />
+            <el-form-item label="厂商编号" prop="no" v-if="form.id != null">
+              <el-input v-model="form.no" placeholder="请输入厂商编号" />
             </el-form-item>
           </el-col>
 
           <el-col :span="12">
-            <el-form-item label="供应商名称" prop="name">
-              <el-input v-model="form.name" placeholder="请输入供应商名称" />
+            <el-form-item label="厂商名称" prop="name">
+              <el-input v-model="form.name" placeholder="请输入厂商名称" />
             </el-form-item>
           </el-col>
 
           <el-col :span="12">
-            <el-form-item label="供应商简称" prop="shortName">
-              <el-input v-model="form.shortName" placeholder="请输入供应商简称" />
+            <el-form-item label="厂商简称" prop="shortName">
+              <el-input v-model="form.shortName" placeholder="请输入厂商简称" />
             </el-form-item>
           </el-col>
 
           <el-col :span="12">
-            <el-form-item label="供应商联系方式" prop="phone">
-              <el-input v-model="form.phone" placeholder="请输入供应商联系方式" />
+            <el-form-item label="厂商联系方式" prop="phone">
+              <el-input v-model="form.phone" placeholder="请输入厂商联系方式" />
             </el-form-item>
           </el-col>
 
           <el-col :span="12">
-            <el-form-item label="供应商传真" prop="fax">
-              <el-input v-model="form.fax" placeholder="请输入供应商传真" />
+            <el-form-item label="厂商传真" prop="fax">
+              <el-input v-model="form.fax" placeholder="请输入厂商传真" />
             </el-form-item>
           </el-col>
 
           <el-col :span="12">
-            <el-form-item label="供应商地址" prop="address">
-              <el-input v-model="form.address" placeholder="请输入供应商地址" />
+            <el-form-item label="厂商地址" prop="address">
+              <el-input v-model="form.address" placeholder="请输入厂商地址" />
             </el-form-item>
           </el-col>
           
@@ -214,7 +214,7 @@ export default {
       showSearch: true,
       // 总条数
       total: 0,
-      // 供应商信息表格数据
+      // 厂商信息表格数据
       supplierList: [],
       // 弹出层标题
       title: "",
@@ -240,7 +240,7 @@ export default {
     this.getList();
   },
   methods: {
-    /** 查询供应商信息列表 */
+    /** 查询厂商信息列表 */
     getList() {
       this.loading = true;
       listSupplier(this.queryParams).then(response => {
@@ -295,7 +295,7 @@ export default {
     handleAdd() {
       this.reset();
       this.open = true;
-      this.title = "添加供应商信息";
+      this.title = "添加厂商信息";
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
@@ -304,7 +304,7 @@ export default {
       getSupplier(id).then(response => {
         this.form = response.data;
         this.open = true;
-        this.title = "修改供应商信息";
+        this.title = "修改厂商信息";
       });
     },
     /** 提交按钮 */
@@ -330,7 +330,7 @@ export default {
     /** 删除按钮操作 */
     handleDelete(row) {
       const ids = row.id || this.ids;
-      this.$confirm('是否确认删除供应商信息编号为"' + ids + '"的数据项?', "警告", {
+      this.$confirm('是否确认删除厂商信息编号为"' + ids + '"的数据项?', "警告", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning"
@@ -344,7 +344,7 @@ export default {
     /** 导出按钮操作 */
     handleExport() {
       const queryParams = this.queryParams;
-      this.$confirm('是否确认导出所有供应商信息数据项?', "警告", {
+      this.$confirm('是否确认导出所有厂商信息数据项?', "警告", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning"
