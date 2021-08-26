@@ -19,7 +19,7 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="商品简称" prop="shortName">
+      <!-- <el-form-item label="商品简称" prop="shortName">
         <el-input
           v-model="queryParams.shortName"
           placeholder="请输入商品简称"
@@ -27,7 +27,7 @@
           size="small"
           @keyup.enter.native="handleQuery"
         />
-      </el-form-item>
+      </el-form-item> -->
       <el-form-item label="商品类型" prop="type">
         <el-select v-model="queryParams.type" placeholder="请选择商品类型" clearable size="small">
           <el-option
@@ -105,11 +105,18 @@
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="商品编号" align="center" prop="no" />
       <el-table-column label="商品名称" align="center" prop="name" />
-      <el-table-column label="商品简称" align="center" prop="shortName" />
+      <!-- <el-table-column label="商品简称" align="center" prop="shortName" /> -->
       <el-table-column label="商品类型" align="center" prop="type" :formatter="productTypeFormat"/>
       <el-table-column label="商品型号" align="center" prop="size" :formatter="productSizeFormat"/>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-view"
+            @click="handleView(scope.row)"
+            v-hasPermi="['voc:product:query']"
+          >查看</el-button>
           <el-button
             size="mini"
             type="text"
@@ -152,11 +159,11 @@
             </el-form-item>
           </el-col>
 
-          <el-col :span="12">
+          <!-- <el-col :span="12">
             <el-form-item label="商品简称" prop="shortName">
               <el-input v-model="form.shortName" placeholder="请输入商品简称" />
             </el-form-item>
-          </el-col>
+          </el-col> -->
 
           <el-col :span="12">
             <el-form-item label="商品类型" prop="type">
@@ -192,7 +199,7 @@
         </el-row>  
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button type="primary" @click="submitForm" v-if="this.commitShow">确 定</el-button>
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
@@ -226,6 +233,8 @@ export default {
       title: "",
       // 是否显示弹出层
       open: false,
+      //是否显示提交按钮
+      commitShow : false,
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -319,6 +328,7 @@ export default {
     handleAdd() {
       this.reset();
       this.open = true;
+      this.commitShow = true;
       this.title = "添加商品信息";
     },
     /** 修改按钮操作 */
@@ -328,7 +338,18 @@ export default {
       getProduct(id).then(response => {
         this.form = response.data;
         this.open = true;
+        this.commitShow = true;
         this.title = "修改商品信息";
+      });
+    },
+    /** 查看按钮操作 */
+    handleView(row) {
+      this.reset();
+      const id = row.id || this.ids
+      getProduct(id).then(response => {
+        this.form = response.data;
+        this.open = true;
+        this.title = "查看商品信息";
       });
     },
     /** 提交按钮 */

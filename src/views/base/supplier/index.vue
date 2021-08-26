@@ -19,7 +19,7 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="厂商简称" prop="shortName">
+      <!-- <el-form-item label="厂商简称" prop="shortName">
         <el-input
           v-model="queryParams.shortName"
           placeholder="请输入厂商简称"
@@ -27,7 +27,7 @@
           size="small"
           @keyup.enter.native="handleQuery"
         />
-      </el-form-item>
+      </el-form-item> -->
       <el-form-item label="负责人" prop="managerName">
         <el-input
           v-model="queryParams.managerName"
@@ -92,14 +92,20 @@
 
     <el-table v-loading="loading" :data="supplierList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="主键" align="center" prop="id" />
       <el-table-column label="厂商编号" align="center" prop="no" />
       <el-table-column label="厂商名称" align="center" prop="name" />
-      <el-table-column label="厂商简称" align="center" prop="shortName" />
+      <!-- <el-table-column label="厂商简称" align="center" prop="shortName" /> -->
+      <el-table-column label="厂商电话" align="center" prop="phone" />
       <el-table-column label="负责人" align="center" prop="managerName" />
-      <el-table-column label="备注信息" align="center" prop="remarks" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-view"
+            @click="handleView(scope.row)"
+            v-hasPermi="['base:supplier:query']"
+          >查看</el-button>
           <el-button
             size="mini"
             type="text"
@@ -142,11 +148,11 @@
             </el-form-item>
           </el-col>
 
-          <el-col :span="12">
+          <!-- <el-col :span="12">
             <el-form-item label="厂商简称" prop="shortName">
               <el-input v-model="form.shortName" placeholder="请输入厂商简称" />
             </el-form-item>
-          </el-col>
+          </el-col> -->
           
           <el-col :span="12">
             <el-form-item label="负责人" prop="managerName">
@@ -186,7 +192,7 @@
         </el-row>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button type="primary" @click="submitForm" v-if="this.commitShow">确 定</el-button>
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
@@ -220,6 +226,8 @@ export default {
       title: "",
       // 是否显示弹出层
       open: false,
+      //是否显示提交按钮
+      commitShow: false,
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -295,6 +303,7 @@ export default {
     handleAdd() {
       this.reset();
       this.open = true;
+      this.commitShow = true;
       this.title = "添加厂商信息";
     },
     /** 修改按钮操作 */
@@ -304,7 +313,18 @@ export default {
       getSupplier(id).then(response => {
         this.form = response.data;
         this.open = true;
+        this.commitShow = true;
         this.title = "修改厂商信息";
+      });
+    },
+    /** 查看按钮操作 */
+    handleView(row) {
+      this.reset();
+      const id = row.id || this.ids
+      getSupplier(id).then(response => {
+        this.form = response.data;
+        this.open = true;
+        this.title = "查看厂商信息";
       });
     },
     /** 提交按钮 */
