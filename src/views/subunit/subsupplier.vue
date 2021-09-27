@@ -1,47 +1,35 @@
 <template>
   <div class="app-container">
-    <el-dialog :title="title"   width="75%" height="75%"  :visible.sync="productVisible" :before-close="cancelPage"  append-to-body>
+    <el-dialog :title="title"   width="75%" height="75%"  :visible.sync="supplierVisible" :before-close="cancelPage"  append-to-body>
     <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="商品编号" prop="no">
+      <el-form-item label="厂商编号" prop="no">
         <el-input
           v-model="queryParams.no"
-          placeholder="请输入商品编号"
+          placeholder="请输入厂商编号"
           clearable
           size="small"
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
 
-      <el-form-item label="商品名称" prop="name">
+      <el-form-item label="厂商名称" prop="name">
         <el-input
           v-model="queryParams.name"
-          placeholder="请输入商品名称"
+          placeholder="请输入厂商名称"
           clearable
           size="small"
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
       
-      <el-form-item label="商品类型" prop="type">
-        <el-select v-model="queryParams.type" placeholder="请选择商品类型" clearable size="small">
-          <el-option
-            v-for="dict in productTypeOptions"
-            :key="dict.dictValue"
-            :label="dict.dictLabel"
-            :value="dict.dictValue"
-          />
-        </el-select>
-      </el-form-item>
-
-      <el-form-item label="商品型号" prop="size">
-        <el-select v-model="queryParams.size" placeholder="请选择商品型号" clearable size="small">
-          <el-option
-            v-for="dict in productSizeOptions"
-            :key="dict.dictValue"
-            :label="dict.dictLabel"
-            :value="dict.dictValue"
-          />
-        </el-select>
+      <el-form-item label="负责人" prop="managerName">
+        <el-input
+          v-model="queryParams.managerName"
+          placeholder="请输入负责人"
+          clearable
+          size="small"
+          @keyup.enter.native="handleQuery"
+        />
       </el-form-item>
 
       <el-form-item>
@@ -50,12 +38,12 @@
       </el-form-item>
     </el-form>
 
-    <el-table v-loading="loading" :data="productList" @selection-change="handleSelectionChange" class="single-selection-table" ref="Table">
+    <el-table v-loading="loading" :data="supplierList" @selection-change="handleSelectionChange" class="single-selection-table" ref="Table">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="商品编号" align="center" prop="no" />
-      <el-table-column label="商品名称" align="center" prop="name" />
-      <el-table-column label="商品类型" align="center" prop="type" :formatter="productTypeFormat"/>
-      <el-table-column label="商品型号" align="center" prop="size" :formatter="productSizeFormat"/>
+      <el-table-column label="厂商编号" align="center" prop="no" />
+      <el-table-column label="厂商名称" align="center" prop="name" />
+      <el-table-column label="厂商电话" align="center" prop="phone" />
+      <el-table-column label="负责人" align="center" prop="managerName" />、
     </el-table>
        
     <pagination
@@ -81,12 +69,12 @@
 </style>
 
 <script>
-import { listProductInfo } from "@/api/subunit/subunit";
+import { listSupplierInfo } from "@/api/subunit/subunit";
 
 export default {
-  name: "SubProduct",
+  name: "SubSupplier",
   props: {
-    productVisible: {
+    supplierVisible: {
       type: Boolean,
       default: false
     }
@@ -108,7 +96,7 @@ export default {
       // 总条数
       total: 0,
       // 商品信息表格数据
-      productList: [],
+      supplierList: [],
       // 弹出层标题
       title: "商品列表",
       // 是否显示弹出层
@@ -117,18 +105,13 @@ export default {
       commitShow : false,
       // 查询参数
       queryParams: {
-        pageNum: 1,
+       pageNum: 1,
         pageSize: 10,
         no: null,
         name: null,
         shortName: null,
-        type: null,
-        size: null,
+        managerName: null,
       },
-      //商品类型列表
-      productTypeOptions: [],
-      //商品型号列表
-      productSizeOptions: [],
       // 表单参数
       form: {},
       // 表单校验
@@ -138,30 +121,14 @@ export default {
   },
   created() {
     this.getList();
-    //获取商品类型下拉字典
-    this.getDicts("voc_product_type").then(response => {
-      this.productTypeOptions = response.data;
-    });
-    //获取商品型号下拉字典
-    this.getDicts("voc_product_size").then(response => {
-      this.productSizeOptions = response.data;
-    });
   },
   methods: {
-    // 商品类型字典翻译
-    productTypeFormat(row, column) {
-      return this.selectDictLabel(this.productTypeOptions, row.type);
-    },
-    // 商品型号字典翻译
-    productSizeFormat(row, column) {
-      return this.selectDictLabel(this.productSizeOptions, row.size);
-    },
     /** 查询商品信息列表 */
     getList() {
       this.loading = true;
-      listProductInfo(this.queryParams).then(response =>
+      listSupplierInfo(this.queryParams).then(response =>
       {
-        this.productList = response.rows;
+        this.supplierList = response.rows;
         this.total = response.total;
         this.loading = false;
       });
@@ -170,22 +137,20 @@ export default {
     cancelPage()
      {
       this.$refs.Table.clearSelection()
-      this.$emit('closeSubProduct');
+      this.$emit('closeSubSupplier');
     },
     submitPage(row)
     {
-      console.log('1----')
-       const productId = row.id || this.selectionId[0];
-       const productName = row.name || this.selectionName[0];
-       console.log('2----')
-       if(!productId)
+       const supplierId = row.id || this.selectionId[0];
+       const supplierName = row.name || this.selectionName[0];
+       if(!supplierId)
        {
-           this.msgError('请选择一种商品');
+           this.msgError('请选择一个厂家');
            return;
        }
        this.$refs.Table.clearSelection()
-       this.$emit('receiveSubProduct',productId,productName);
-       this.$emit('closeSubProduct');
+       this.$emit('receiveSubSupplier',supplierId,supplierName);
+       this.$emit('closeSubSupplier');
     },
     // 取消按钮
     cancel() {

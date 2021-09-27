@@ -98,17 +98,36 @@
     <el-table v-loading="loading" :data="purchaseList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="采购编号" align="center" prop="purchaseNo" />
-      <el-table-column label="归属门店" align="center" prop="deptId" />
-      <el-table-column label="厂商名称" align="center" prop="supplierId" />
+      <el-table-column label="归属门店" align="center" prop="deptName" />
+      <el-table-column label="厂商名称" align="center" prop="supplierName" />
+      <el-table-column label="采购总数" align="center" prop="totalAmount" />
+      <el-table-column label="采购总价" align="center" prop="totalPrice" />
       <el-table-column label="采购类型" align="center" prop="purchaseType" :formatter="purchaseTypeFormat" />
       <el-table-column label="采购状态" align="center" prop="purchaseStatus" :formatter="purchaseStatusFormat" />
+      <el-table-column label="采购时间" align="center" prop="createTime" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
             size="mini"
             type="text"
+            icon="el-icon-view"
+            @click="handleStorage(scope.row)"
+            v-if="scope.row.purchaseStatus=='001'"
+            v-hasPermi="['voc:purchase:storage']"
+          >入库</el-button>
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-view"
+            @click="handleView(scope.row)"
+            v-hasPermi="['voc:purchase:query']"
+          >查看</el-button>
+          <el-button
+            size="mini"
+            type="text"
             icon="el-icon-edit"
             @click="handleUpdate(scope.row)"
+            v-if="scope.row.purchaseStatus=='001'"
             v-hasPermi="['voc:purchase:edit']"
           >修改</el-button>
           <el-button
@@ -116,6 +135,7 @@
             type="text"
             icon="el-icon-delete"
             @click="handleDelete(scope.row)"
+            v-if="scope.row.purchaseStatus=='001'"
             v-hasPermi="['voc:purchase:remove']"
           >删除</el-button>
         </template>
@@ -133,31 +153,31 @@
     <!-- 商品选择组件-->
     <SubProductModel :productVisible="subProductVisible" @receiveSubProduct="receiveSubProductValues" @closeSubProduct="closeSubProductWindows"></SubProductModel>
 
+    <!-- 厂家选择组件-->
+    <SubSupplierModel :supplierVisible="subSupplierVisible" @receiveSubSupplier="receiveSubSupplierValues" @closeSubSupplier="closeSubSupplierWindows"></SubSupplierModel>
+
+    <!-- =====================================================================编辑采购信息对话框 begin =====================================================================-->
+
     <!-- 添加或修改采购信息对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="800px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-row>
-          <el-col :span="12">
-            <el-form-item label="采购编号" prop="purchaseNo">
-              <el-input v-model="form.purchaseNo" placeholder="请输入采购单编号" />
+
+          <el-col :span="24">
+            <el-form-item label="采购编号" prop="purchaseNo" v-if = "form.id">
+              <el-input v-model="form.purchaseNo" :disabled="edit"/>
+            </el-form-item>
+          </el-col>
+
+          <el-col :span="12">  
+            <el-form-item label="厂商名称" prop="supplierName">
+              <el-input v-model="form.supplierName" @click.native="handleSubSupplierForForm()" suffix-icon="el-icon-school" placeholder="请选择厂家" readonly/>
             </el-form-item>
           </el-col>
 
           <el-col :span="12">  
             <el-form-item label="归属门店" prop="deptId">
               <treeselect v-model="form.deptId" :options="deptOptions" :show-count="true" placeholder="请选择归属部门"/>
-            </el-form-item>
-          </el-col>
-
-          <el-col :span="12">  
-            <el-form-item label="厂商名称" prop="supplierId">
-              <el-input v-model="form.supplierId" placeholder="请输入供应商标识" />
-            </el-form-item>
-          </el-col>
-
-          <el-col :span="12">  
-            <el-form-item label="入库标识" prop="storeId">
-              <el-input v-model="form.storeId" placeholder="请输入入库标识" />
             </el-form-item>
           </el-col>
 
@@ -176,13 +196,13 @@
 
           <el-col :span="12">  
             <el-form-item label="采购总数" prop="totalAmount">
-              <el-input v-model="form.totalAmount" placeholder="请输入采购总数" />
+              <el-input v-model="form.totalAmount" :disabled="edit"/>
             </el-form-item>
           </el-col>
 
           <el-col :span="12">  
             <el-form-item label="采购总价" prop="totalPrice">
-              <el-input v-model="form.totalPrice" placeholder="请输入采购总价" />
+              <el-input v-model="form.totalPrice" :disabled="edit"/>
             </el-form-item>
           </el-col>
 
@@ -201,28 +221,36 @@
             style="width: 100%"
             @selection-change="selectChange"
           >
-              <el-table-column label="序号"  type="index" width="60" align="center"></el-table-column>
+             <el-table-column label="序号"  type="index" width="60" align="center"></el-table-column>
 
-             <el-table-column label="商品" align="center">
+             <el-table-column label="商品" align="center" width="200">
                 <template slot-scope="scope">
-                  <el-form-item class="item-form" :prop="'itemList.'+scope.$index+'.productName'">
-                    <el-input v-model="scope.row.productName" @click.native="handleSubProductForChild(scope.$index)" suffix-icon="el-icon-user-solid" readonly/>
+                  <el-form-item class="item-form" :prop="'itemList.'+scope.$index+'.productName'" :rules = "rules.productName">
+                    <el-input v-model="scope.row.productName" @click.native="handleSubProductForChild(scope.$index)" suffix-icon="el-icon-shopping-bag-1" readonly/>
                   </el-form-item>  
                 </template>
             </el-table-column>
 
             <el-table-column label="数量" align="center">
                 <template slot-scope="scope">
-                  <el-form-item class="item-form" :prop="'itemList.'+scope.$index+'.amount'">
-                    <el-input v-model="scope.row.amount"></el-input>
+                  <el-form-item class="item-form" :prop="'itemList.'+scope.$index+'.amount'" :rules = "rules.amount">
+                    <el-input v-model="scope.row.amount" @input="calculateRowTotalPrice(scope.row,scope.$index),calculateRowTotalAmount()"></el-input>
                   </el-form-item>  
                 </template>
             </el-table-column>
 
-            <el-table-column label="价格" align="center">
+            <el-table-column label="单价" align="center">
               <template slot-scope="scope">
-                <el-form-item class="item-form" :prop="'itemList.'+scope.$index+'.singlePrice'">
-                  <el-input v-model="scope.row.singlePrice"></el-input>
+                <el-form-item class="item-form" :prop="'itemList.'+scope.$index+'.singlePrice'" :rules = "rules.singlePrice">
+                  <el-input v-model="scope.row.singlePrice" @input="calculateRowTotalPrice(scope.row,scope.$index)"></el-input>
+                </el-form-item>  
+              </template>
+            </el-table-column>
+
+             <el-table-column label="总价" align="center">
+              <template slot-scope="scope">
+                <el-form-item class="item-form" :prop="'itemList.'+scope.$index+'.totalPrice'">
+                  <el-input v-model="scope.row.totalPrice" :disabled="edit"></el-input>
                 </el-form-item>  
               </template>
             </el-table-column>
@@ -235,20 +263,119 @@
             </el-table-column>
         </el-table>
 
-
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
+    <!-- =====================================================================编辑采购信息对话框 end ===================================================================== -->
+
+
+    <!-- =====================================================================查看采购信息对话框 begin =====================================================================-->
+
+    <!-- 查看采购信息对话框 -->
+    <el-dialog :title="title" :visible.sync="viewOpen" width="800px" append-to-body>
+      <el-form ref="form" :model="form" label-width="80px">
+        <el-row>
+
+          <el-col :span="24">
+            <el-form-item label="采购编号" prop="purchaseNo">
+              <el-input v-model="form.purchaseNo" readonly/>
+            </el-form-item>
+          </el-col>
+
+          <el-col :span="12">  
+            <el-form-item label="厂商名称" prop="supplierName">
+              <el-input v-model="form.supplierName" readonly/>
+            </el-form-item>
+          </el-col>
+
+          <el-col :span="12">  
+            <el-form-item label="归属门店" prop="deptId">
+              <el-input v-model="form.deptName" readonly/>
+            </el-form-item>
+          </el-col>
+
+          <el-col :span="12">  
+            <el-form-item label="采购类型" prop="purchaseType">
+              <el-input v-model="form.purchaseTypeName" readonly/>
+            </el-form-item>
+          </el-col>
+
+          <el-col :span="12">  
+            <el-form-item label="采购总数" prop="totalAmount">
+              <el-input v-model="form.totalAmount" readonly/>
+            </el-form-item>
+          </el-col>
+
+          <el-col :span="12">  
+            <el-form-item label="采购总价" prop="totalPrice">
+              <el-input v-model="form.totalPrice" readonly/>
+            </el-form-item>
+          </el-col>
+
+          <el-col :span="24">  
+            <el-form-item label="备注信息" prop="remarks">
+              <el-input v-model="form.remarks" type="textarea" readonly/>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <!-- 采购商品信息子表单-->
+        <el-table
+            ref="multipleTable"
+            :data="form.itemList"
+            tooltip-effect="dark"
+            style="width: 100%"
+            @selection-change="selectChange"
+          >
+             <el-table-column label="序号"  type="index" width="60" align="center"></el-table-column>
+
+             <el-table-column label="商品" align="center" width="200">
+                <template slot-scope="scope">
+                  <el-form-item class="item-form" :prop="'itemList.'+scope.$index+'.productName'">
+                    <el-input v-model="scope.row.productName"  readonly/>
+                  </el-form-item>  
+                </template>
+            </el-table-column>
+
+            <el-table-column label="数量" align="center">
+                <template slot-scope="scope">
+                  <el-form-item class="item-form" :prop="'itemList.'+scope.$index+'.amount'">
+                    <el-input v-model="scope.row.amount" readonly></el-input>
+                  </el-form-item>  
+                </template>
+            </el-table-column>
+
+            <el-table-column label="单价" align="center">
+              <template slot-scope="scope">
+                <el-form-item class="item-form" :prop="'itemList.'+scope.$index+'.singlePrice'">
+                  <el-input v-model="scope.row.singlePrice" readonly></el-input>
+                </el-form-item>  
+              </template>
+            </el-table-column>
+
+             <el-table-column label="总价" align="center">
+              <template slot-scope="scope">
+                <el-form-item class="item-form" :prop="'itemList.'+scope.$index+'.totalPrice'">
+                  <el-input v-model="scope.row.totalPrice" readonly></el-input>
+                </el-form-item>  
+              </template>
+            </el-table-column>
+
+        </el-table>
+
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="cancel">取 消</el-button>
+      </div>
+    </el-dialog>
+    <!-- =====================================================================查看采购信息对话框 end ===================================================================== -->
   </div>
 </template>
 
 <style scoped>
-  /* .app-container /deep/ .el-form-item__label{
-      font-size: 12px;
-    } */
     .item-form >>> .el-form-item__content{
       margin-left:0px !important;
       margin-bottom:-20px !important;
@@ -256,15 +383,16 @@
 </style>
 
 <script>
-import { listPurchase, getPurchase, delPurchase, addPurchase, updatePurchase, exportPurchase } from "@/api/buy/purchase/purchase";
+import { listPurchase, getPurchase, delPurchase, addPurchase, updatePurchase, storagePurchase, exportPurchase } from "@/api/buy/purchase/purchase";
 import { powerTree } from "@/api/system/dept";
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 import SubProductModel from '@/views/subunit/subproduct.vue';
+import SubSupplierModel from '@/views/subunit/subsupplier.vue';
 
 export default {
   name: "Purchase",
-  components: { Treeselect, SubProductModel},
+  components: { Treeselect, SubProductModel, SubSupplierModel},
   data() {
     return {
       // 遮罩层
@@ -287,6 +415,8 @@ export default {
       title: "",
       // 是否显示弹出层
       open: false,
+      //是否显示详情查看弹出层
+      viewOpen: false,
       // 采购类型字典
       purchaseTypeOptions: [],
       // 采购状态字典
@@ -295,12 +425,18 @@ export default {
       deptOptions: undefined,
       // 部门名称
       deptName: undefined,
-      // 是否显示组件
+      // 是否显示商品组件
       subProductVisible: false,
+      //是否显示厂家组件
+      subSupplierVisible: false,
       //开启只读
       readonly: true,
-      //组件调用场景类型
-      visibleType: 0,
+      //开启禁用
+      edit: true,
+      //商品组件调用场景类型
+      productVisibleType: 0,
+      //厂家组件调用类型
+      supplierVisibleType: 0,
       //控件行号
       visitRowNum: 0,
       // 查询参数
@@ -317,6 +453,25 @@ export default {
       form: {},
       // 表单校验
       rules: {
+        supplierName: [
+            { required: true, message: "厂商不能为空", trigger: "blur" }
+        ],
+        deptId: [
+            { required: true, message: "归属门店不能为空", trigger: "blur" }
+        ],
+        purchaseType: [
+            { required: true, message: "采购类型不能为空", trigger: "blur" }
+        ],
+        singlePrice: [
+            { required: true, message: "采购总价不能为空", trigger: "blur" }
+        ],
+        productName: [
+            { required: true, message: "商品不能为空", trigger: "blur" }
+        ],
+        amount: [
+            { required: true, message: "商品数量不能为空", trigger: "blur" }
+        ]
+
       }
     };
   },
@@ -373,6 +528,7 @@ export default {
     // 取消按钮
     cancel() {
       this.open = false;
+      this.viewOpen = false;
       this.reset();
     },
     // 表单重置
@@ -381,12 +537,15 @@ export default {
         id: null,
         purchaseNo: null,
         deptId: null,
+        deptName: null,
         supplierId: null,
+        supplierName: null,
         storeId: null,
         purchaseType: null,
         totalAmount: null,
         totalPrice: null,
         purchaseStatus: "0",
+        purchaseStatusName: null,
         remarks: null,
         createBy: null,
         createTime: null,
@@ -398,7 +557,8 @@ export default {
           productId: null,
           productName: null,
           amount: null,
-          singlePrice: null
+          singlePrice: null,
+          totalPrice: null
         }],
       };
       this.resetForm("form");
@@ -435,6 +595,30 @@ export default {
         this.title = "修改采购信息";
       });
     },
+    /** 查看按钮操作 */
+    handleView(row){
+      this.reset();
+      const id = row.id || this.ids
+      getPurchase(id).then(response => {
+        this.form = response.data;
+        this.viewOpen = true;
+        this.title = "查看采购信息";
+      });
+    },
+    /** 入库按钮操作 */
+    handleStorage(row){
+     const ids = row.id || this.ids;
+      this.$confirm('是否确认对选中采购单进行入库操作?', "警告", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning"
+        }).then(function() {
+          return storagePurchase(ids);
+        }).then(() => {
+          this.getList();
+          this.msgSuccess("入库成功");
+        }).catch(() => {});
+    },
     /** 提交按钮 */
     submitForm() {
       this.$refs["form"].validate(valid => {
@@ -458,7 +642,7 @@ export default {
     /** 删除按钮操作 */
     handleDelete(row) {
       const ids = row.id || this.ids;
-      this.$confirm('是否确认删除采购信息编号为"' + ids + '"的数据项?', "警告", {
+      this.$confirm('是否确认对选中采购单进行删除操作?', "警告", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning"
@@ -484,64 +668,133 @@ export default {
           this.exportLoading = false;
         }).catch(() => {});
     },
+   /**弹出厂家组件-表格使用 */
+    handleSubSupplierForForm()
+    {
+      this.subSupplierVisible = true;
+      this.supplierVisibleType = 1;
+    },
+    /**关闭厂家组件 */
+    closeSubSupplierWindows()
+    {
+        this.subSupplierVisible = false;
+    },
+     /**接收厂家组件选中值 */
+    receiveSubSupplierValues(selectionId,selectionName)
+    {
+      if(this.supplierVisibleType==1){
+        this.form.supplierName = selectionName;
+        this.form.supplierId = selectionId;
+      }
+      this.supplierVisibleType=0;
+    },
+
     /**弹出商品组件-子信息使用 */
-    handleSubProductForChild(i){
+    handleSubProductForChild(i)
+    {
       this.subProductVisible = true;
       this.visitRowNum = i;
-      this.visibleType = 3;
+      this.productVisibleType = 3;
     },
-    /**关闭商品子组件 */
-    closeSubProductWindows(){
+    /**关闭商品组件 */
+    closeSubProductWindows()
+    {
         this.subProductVisible = false;
     },
-     /**接收子组件选中值 */
-    receiveSubProductValues(selectionId,selectionName){
-      if(this.visibleType==3){
+     /**接收商品组件选中值 */
+    receiveSubProductValues(selectionId,selectionName)
+    {
+      if(this.productVisibleType==3)
+      {
         this.form.itemList[this.visitRowNum].productName = selectionName;
         this.form.itemList[this.visitRowNum].productId = selectionId;
       }
-      this.visibleType=0;
+      this.productVisibleType=0;
     },
      //子信息方法
-    lastRow(i){
-       if(i==this.form.itemList.length-1){
+    lastRow(i)
+    {
+       if(i==this.form.itemList.length-1)
+       {
          return true
-       }else{
+       }else
+       {
          return false
        }
     },
-    resetItem(){
-      this.form.itemList = [{
+    resetItem()
+    {
+      this.form.itemList = 
+      [{
          rowNum: null,
          productId: null,
          productName: null,
          amount: null,
-         singlePrice: null
+         singlePrice: null,
+         totalPrice: null
       }];
     },
     // 增加行
-    addRow(rows,i) {
+    addRow(rows,i)
+    {
       if(!rows.productId || !rows.amount ||!rows.singlePrice) return;
-      const row = {
+      const row = 
+      {
           rowNum: null,
           productId: null,
           productName: null,
           amount: null,
-          singlePrice: null
+          singlePrice: null,
+          totalPrice: null
       }
       this.form.itemList.push(row)
     },
     //删除单行
-    deleteRow(rows, i) { //删除
+    deleteRow(rows, i) 
+    { //删除
         this.form.itemList.splice(i, 1);
         if(this.form.itemList.length==0) this.resetItem();
     },
-    selectChange(val) {
+    selectChange(val) 
+    {
       this.multipleSelection = val
+    },
+    //计算单行商品总价
+    calculateRowTotalPrice(row,rowIndex)
+    {
+      const rowAmount = row.amount;
+      const rowSinglePrice = row.singlePrice;
+      if(null!=rowAmount && null!=rowSinglePrice)
+      {
+          const rowTotalPrice = rowAmount * rowSinglePrice;
+          this.form.itemList[rowIndex].totalPrice = rowTotalPrice;
+          this.calculateFormTotalPrice();
+      }
+    },
+    //计算采购总金额
+    calculateFormTotalPrice()
+    {
+       let formTotalPrice = 0;
+       const formList = this.form.itemList;
+       for(let i=0;i<formList.length;i++)
+       {
+          let rowTotalPrice = formList[i].totalPrice;
+          formTotalPrice += rowTotalPrice;
+       }
+       this.form.totalPrice = formTotalPrice;
+    },
+    //计算采购总数量
+    calculateRowTotalAmount()
+    {
+      let formTotalAmount = 0;
+      const formList = this.form.itemList
+      for(let i=0;i<formList.length;i++)
+      {
+        let rowTotalAmount = formList[i].amount * 1;
+        formTotalAmount += rowTotalAmount;
+      }
+      this.form.totalAmount = formTotalAmount;  
     }
-
-
-
   }
 };
 </script>

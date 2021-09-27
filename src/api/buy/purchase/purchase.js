@@ -56,7 +56,6 @@ export function exportPurchase(query) {
 export function storagePurchase(id) {
   return request({
     url: '/voc/purchase/storage/'+id,
-    method: 'get',
-    params: query
+    method: 'get'
   })
 }
