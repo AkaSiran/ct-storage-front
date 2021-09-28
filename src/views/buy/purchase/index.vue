@@ -76,7 +76,7 @@
           plain
           icon="el-icon-delete"
           size="mini"
-          :disabled="multiple"
+          :disabled="place"
           @click="handleDelete"
           v-hasPermi="['voc:purchase:remove']"
         >删除</el-button>
@@ -96,7 +96,7 @@
     </el-row>
 
     <el-table v-loading="loading" :data="purchaseList" @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55" align="center" />
+      <el-table-column type="selection" width="55" align="center"/>
       <el-table-column label="采购编号" align="center" prop="purchaseNo" />
       <el-table-column label="归属门店" align="center" prop="deptName" />
       <el-table-column label="厂商名称" align="center" prop="supplierName" />
@@ -405,6 +405,8 @@ export default {
       single: true,
       // 非多个禁用
       multiple: true,
+      //非下单禁用
+      place: true,
       // 显示搜索条件
       showSearch: true,
       // 总条数
@@ -575,9 +577,54 @@ export default {
     },
     // 多选框选中数据
     handleSelectionChange(selection) {
+      // this.ids = selection.map(item => item.id)
+      // this.single = selection.length!==1
+      // this.multiple = !selection.length
+      this.handlePlaceDeleteChange(selection);
+      this.handlePlaceUpdateChange(selection);
+    },
+    //删除-核查下单状态
+    handlePlaceDeleteChange(selection)
+    {
       this.ids = selection.map(item => item.id)
-      this.single = selection.length!==1
-      this.multiple = !selection.length
+      let statusFlag = false;
+      const statusArray = selection.map(item => item.purchaseStatus)
+      if(statusArray==0) 
+      {
+        this.place = true;
+      }else
+      {
+        for(let index=0;index<statusArray.length;index++)
+        {
+          const rowStatus = statusArray[index];
+          if(rowStatus!='001')
+          {
+            statusFlag = true;
+          }
+        }
+        this.place = statusFlag;
+      }
+    },
+    //修改-核查下单状态
+    handlePlaceUpdateChange(selection)
+    {
+      this.ids = selection.map(item => item.id)
+      let statusFlag = false;
+      const singleFlag = selection.length!==1;
+      const statusArray = selection.map(item => item.purchaseStatus);
+      if(singleFlag)
+      {
+        this.single = true;
+      }else
+      {
+        const selectionStatus = statusArray[0];
+        if(selectionStatus!='001')
+        {
+          statusFlag = true;
+        }
+        this.single = selectionStatus && statusFlag;
+      }
+      console.log(singleFlag);
     },
     /** 新增按钮操作 */
     handleAdd() {
@@ -794,7 +841,7 @@ export default {
         formTotalAmount += rowTotalAmount;
       }
       this.form.totalAmount = formTotalAmount;  
-    }
+    },
   }
 };
 </script>
